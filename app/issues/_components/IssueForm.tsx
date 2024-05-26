@@ -3,10 +3,9 @@ import ErrorMessage from "@/app/components/ErrorMessage";
 import { issueSchema } from "@/app/validationSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Issue } from "@prisma/client";
-import { Button, Callout, Spinner, TextField } from "@radix-ui/themes";
+import { Button, Callout, Flex, Spinner, TextField } from "@radix-ui/themes";
 import axios from "axios";
 import "easymde/dist/easymde.min.css";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -18,7 +17,7 @@ type IssueFormData = z.infer<typeof issueSchema>;
 const IssueForm = ({ issue }: { issue?: Issue }) => {
   const router = useRouter();
   const [error, setError] = useState("");
-  const [isSubmitting, setSubmitting] = useState(false);
+  const [isProcessing, setProcessing] = useState(false);
   const {
     register,
     control,
@@ -30,7 +29,7 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
 
   const onSubmit = handleSubmit(async (data) => {
     try {
-      setSubmitting(true);
+      setProcessing(true);
       if (issue) {
         await axios.patch("/api/issues/" + issue.id, data);
         router.push("/issues/" + issue.id);
@@ -40,10 +39,14 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
       }
       router.refresh();
     } catch (error) {
-      setSubmitting(false);
+      setProcessing(false);
       setError("An unexpected error occured.");
     }
   });
+  const handleCancel = async () => {
+    setProcessing(true);
+    router.push(`/issues/${issue ? issue.id : ""}`);
+  };
 
   return (
     <div className="max-w-xl">
@@ -75,10 +78,17 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
         <ErrorMessage>{errors.description?.message}</ErrorMessage>
 
         {/* submit button */}
-        <Button disabled={isSubmitting}>
-          {issue ? "Update Issue" : "Submit New Issue"}{" "}
-          {isSubmitting && <Spinner />}
-        </Button>
+        <Flex gap="2">
+          <Button disabled={isProcessing}>
+            {issue ? "Update Issue" : "Submit New Issue"}{" "}
+            {isProcessing && <Spinner />}
+          </Button>
+          {/* cancel button */}
+          <Button disabled={isProcessing} onClick={handleCancel}>
+            Cancel
+            {isProcessing && <Spinner />}
+          </Button>
+        </Flex>
       </form>
     </div>
   );
