@@ -23,7 +23,7 @@ const IssuePage = async ({ searchParams }: Props) => {
   const page = parseInt(searchParams.page) || 1;
   const pageSize = 10;
   const orderBy = columnNames.includes(searchParams.orderBy)
-    ? { [searchParams.orderBy]: "asc" }
+    ? { [searchParams.orderBy]: searchParams.sortOrder || "asc" }
     : undefined;
   const issues = await prisma.issue.findMany({
     where,

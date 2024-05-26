@@ -9,6 +9,7 @@ import { Issue, Status } from "@prisma/client";
 export interface IssueQuery {
   status: Status;
   orderBy: keyof Issue;
+  sortOrder: "asc" | "desc";
   page: string;
 }
 interface Props {
@@ -17,14 +18,22 @@ interface Props {
 }
 
 const IssueTable = ({ searchParams, issues }: Props) => {
+  const getNextSortOrder = (currentOrder: "asc" | "desc") => {
+    return currentOrder === "asc" ? "desc" : "asc";
+  };
   return (
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
-          {columns.map((col) => (
+          {/* {columns.map((col) => (
             <Table.ColumnHeaderCell key={col.value} className={col.className}>
               <NextLink
-                href={{ query: { ...searchParams, orderBy: col.value } }}
+                href={{
+                  query: {
+                    ...searchParams,
+                    orderBy: col.value,
+                  },
+                }}
               >
                 {col.label}
               </NextLink>
@@ -32,7 +41,35 @@ const IssueTable = ({ searchParams, issues }: Props) => {
                 <ArrowUpIcon className="inline" />
               )}
             </Table.ColumnHeaderCell>
-          ))}
+          ))} */}
+          {columns.map((col) => {
+            const isSorted = col.value === searchParams.orderBy;
+            const nextSortOrder = isSorted
+              ? getNextSortOrder(searchParams.sortOrder)
+              : "asc";
+            return (
+              <Table.ColumnHeaderCell key={col.value} className={col.className}>
+                <NextLink
+                  href={{
+                    query: {
+                      ...searchParams,
+                      orderBy: col.value,
+                      sortOrder: nextSortOrder, // Set next sort order
+                    },
+                  }}
+                >
+                  {col.label}
+                </NextLink>
+                {isSorted && (
+                  <ArrowUpIcon
+                    className={`inline ${
+                      searchParams.sortOrder === "asc" ? "" : "rotate-180"
+                    }`}
+                  />
+                )}
+              </Table.ColumnHeaderCell>
+            );
+          })}
         </Table.Row>
       </Table.Header>
       <Table.Body>
