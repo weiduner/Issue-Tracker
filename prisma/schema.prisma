@@ -21,8 +21,10 @@ model Issue {
   status           Status   @default(OPEN)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  createdByUserId String @db.ObjectId
+  createdByUser User @relation(name: "create", fields: [createdByUserId], references: [id])
   assignedToUserId String?   @db.ObjectId
-  assignedToUser   User?    @relation(fields: [assignedToUserId], references: [id])
+  assignedToUser   User?    @relation(name: "assign", fields: [assignedToUserId], references: [id])
 }
 
 enum Status {
@@ -44,7 +46,8 @@ model User {
  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  assignedIssue Issue[]
+  createdIssue Issue[] @relation(name: "create")
+  assignedIssue Issue[]@relation(name: "assign")
 }
  
 model Account {

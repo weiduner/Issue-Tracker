@@ -7,8 +7,13 @@ import { Status } from "@prisma/client";
 const statuses = Object.values(Status);
 
 export async function POST(request: NextRequest) {
-  // const session = await getServerSession(authOptions);
-  // if (!session) return NextResponse.json({}, { status: 401 });
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({}, { status: 401 });
+  const email = session.user?.email ?? "";
+  const user = await prisma.user.findUnique({
+    where: { email: email },
+  });
+  if (!user) return NextResponse.json("User required", { status: 401 });
   const generateCustomId = async () => {
     const date = new Date().toISOString().split("T")[0].replace(/-/g, ""); // Get current date in YYYY-MM-DD format
 
@@ -34,6 +39,7 @@ export async function POST(request: NextRequest) {
       title: body.title,
       description: body.description,
       issueId: issueId,
+      createdByUserId: user?.id ?? "664ef7ae28f0d8249be7d81f",
     },
   });
   return NextResponse.json(newIssue, { status: 201 });
