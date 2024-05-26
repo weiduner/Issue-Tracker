@@ -3,21 +3,23 @@ import prisma from "@/prisma/client";
 import { patchIssueSchema } from "@/app/validationSchemas";
 import authOptions from "@/app/auth/authOptions";
 import { getServerSession } from "next-auth";
+import { Status } from "@prisma/client";
 
+const statuses = Object.values(Status);
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
   // require login
-  // const session = await getServerSession(authOptions);
-  // if (!session) return NextResponse.json({}, { status: 401 });
+  const session = await getServerSession(authOptions);
+  if (!session) return NextResponse.json({}, { status: 401 });
 
   //validate body
   const body = await request.json();
   const validation = patchIssueSchema.safeParse(body);
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 });
-  const { title, description, assignedToUserId } = body;
+  const { title, description, assignedToUserId, status } = body;
 
   //validate assigned user
   if (assignedToUserId) {
@@ -26,6 +28,9 @@ export async function PATCH(
     });
     if (!user)
       return NextResponse.json({ error: "Invalid User." }, { status: 400 });
+  }
+  if (status && !statuses.includes(status)) {
+    return NextResponse.json({ error: "Invalid Status." }, { status: 400 });
   }
 
   //validate updated issue
@@ -42,6 +47,7 @@ export async function PATCH(
       title,
       description,
       assignedToUserId,
+      status,
     },
   });
   return NextResponse.json(updateIssue);

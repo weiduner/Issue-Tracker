@@ -54,8 +54,8 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
         </Callout.Root>
       )}
 
-      {/* title input */}
       <form className="space-y-3" onSubmit={onSubmit}>
+        {/* title input */}
         <TextField.Root
           defaultValue={issue?.title}
           placeholder="Title"

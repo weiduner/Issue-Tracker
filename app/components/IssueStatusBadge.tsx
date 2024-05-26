@@ -2,7 +2,7 @@ import { Status } from "@prisma/client";
 import { Badge, Flex } from "@radix-ui/themes";
 import React from "react";
 
-const statusMap: Record<
+export const statusMap: Record<
   Status,
   { label: string; color: "red" | "blue" | "green" }
 > = {

@@ -3,8 +3,16 @@ import { Issue } from "@prisma/client";
 import { Flex, Heading, Card, Text } from "@radix-ui/themes";
 import React from "react";
 import ReactMarkdown from "react-markdown";
+import StatusSelect from "./StatusSelect";
+import { Session } from "next-auth";
 
-const IssueDetails = ({ issue }: { issue: Issue }) => {
+const IssueDetails = ({
+  issue,
+  session,
+}: {
+  issue: Issue;
+  session: Session | null;
+}) => {
   return (
     <div>
       <Flex gap="3" my="2">
@@ -13,7 +21,11 @@ const IssueDetails = ({ issue }: { issue: Issue }) => {
       </Flex>
 
       <Flex gap="3" my="2" align="center">
-        <IssueStatusBadge status={issue.status} />
+        {session ? (
+          <StatusSelect issue={issue} />
+        ) : (
+          <IssueStatusBadge status={issue.status} />
+        )}
         <Text>{issue.createdAt.toDateString()}</Text>
       </Flex>
       <Card className="prose max-w-full" mt="4">
