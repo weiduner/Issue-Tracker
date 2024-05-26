@@ -25,23 +25,6 @@ const IssueTable = ({ searchParams, issues }: Props) => {
     <Table.Root variant="surface">
       <Table.Header>
         <Table.Row>
-          {/* {columns.map((col) => (
-            <Table.ColumnHeaderCell key={col.value} className={col.className}>
-              <NextLink
-                href={{
-                  query: {
-                    ...searchParams,
-                    orderBy: col.value,
-                  },
-                }}
-              >
-                {col.label}
-              </NextLink>
-              {col.value === searchParams.orderBy && (
-                <ArrowUpIcon className="inline" />
-              )}
-            </Table.ColumnHeaderCell>
-          ))} */}
           {columns.map((col) => {
             const isSorted = col.value === searchParams.orderBy;
             const nextSortOrder = isSorted
@@ -76,7 +59,9 @@ const IssueTable = ({ searchParams, issues }: Props) => {
         {issues.map((issue) => (
           <Table.Row key={issue.id}>
             <Table.Cell>
-              <Link href={`/issues/${issue.id}`}>{issue.id.toString()}</Link>
+              <Link href={`/issues/${issue.id}`}>
+                {issue.issueId.toString()}
+              </Link>
             </Table.Cell>
             <Table.Cell>{issue.title}</Table.Cell>
             <Table.Cell>
@@ -102,7 +87,7 @@ const columns: {
   value: keyof Issue;
   className?: string;
 }[] = [
-  { label: "Id", value: "id" },
+  { label: "Id", value: "issueId" },
   { label: "Title", value: "title" },
   { label: "Status", value: "status" },
   {

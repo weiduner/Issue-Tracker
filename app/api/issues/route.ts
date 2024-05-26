@@ -9,12 +9,32 @@ const statuses = Object.values(Status);
 export async function POST(request: NextRequest) {
   // const session = await getServerSession(authOptions);
   // if (!session) return NextResponse.json({}, { status: 401 });
+  const generateCustomId = async () => {
+    const date = new Date().toISOString().split("T")[0].replace(/-/g, ""); // Get current date in YYYY-MM-DD format
+
+    // Get the count of documents created today
+    const count = await prisma.issue.count({
+      where: {
+        createdAt: {
+          gte: new Date(new Date().setHours(0, 0, 0, 0)),
+          lt: new Date(new Date().setHours(24, 0, 0, 0)),
+        },
+      },
+    });
+
+    return `${date}-${count + 1}`;
+  };
   const body = await request.json();
   const validation = issueSchema.safeParse(body);
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 });
+  const issueId = await generateCustomId();
   const newIssue = await prisma.issue.create({
-    data: { title: body.title, description: body.description },
+    data: {
+      title: body.title,
+      description: body.description,
+      issueId: issueId,
+    },
   });
   return NextResponse.json(newIssue, { status: 201 });
 }
@@ -51,5 +71,8 @@ export async function GET(request: NextRequest) {
   }
 
   const issues = await prisma.issue.findMany(query);
-  return NextResponse.json({ count: issues.length, data: issues }, { status: 200 });
+  return NextResponse.json(
+    { count: issues.length, data: issues },
+    { status: 200 }
+  );
 }
