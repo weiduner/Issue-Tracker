@@ -32,11 +32,11 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
       setProcessing(true);
       if (issue) {
         await axios.patch("/api/issues/" + issue.id, data);
-        router.push("/issues/" + issue.id);
       } else {
-        await axios.post("/api/issues", data);
-        router.push("/issues");
+        const response = await axios.post("/api/issues", data);
+        issue = response.data;
       }
+      router.push("/issues/" + issue!.id);
       router.refresh();
     } catch (error) {
       setProcessing(false);

@@ -15,10 +15,9 @@ const IssueDetails = ({
 }) => {
   return (
     <div>
-      <Flex gap="3" my="2">
-        <Heading as="h2">{issue.id} </Heading>
-        <Heading as="h2">{issue.title}</Heading>
-      </Flex>
+      <Heading as="h2">
+        {issue.issueId} {">"} {issue.title}
+      </Heading>
 
       <Flex gap="3" my="2" align="center">
         {session ? (
