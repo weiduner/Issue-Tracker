@@ -1,14 +1,6 @@
 import prisma from "@/prisma/client";
 import { Issue, User } from "@prisma/client";
-import {
-  Box,
-  Blockquote,
-  Flex,
-  Button,
-  TextArea,
-  Text,
-  Avatar,
-} from "@radix-ui/themes";
+import { Box, Blockquote, Flex, Text, Avatar } from "@radix-ui/themes";
 import React from "react";
 import CommentEditer from "../_components/CommentEditer";
 

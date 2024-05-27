@@ -35,7 +35,7 @@ const IssueDetails = ({
         </Card>
       </Flex>
       <Flex direction="column" mt="4">
-        <Heading size="4">Disscussion</Heading>
+        <Heading size="4">Discussion</Heading>
         <IssueComments issue={issue} />
       </Flex>
     </div>
