@@ -28,3 +28,7 @@ export const filterIssueSchema = z.object({
     .min(1, "AssignedToUserId is required")
     .optional(),
 });
+export const commentSchema = z.object({
+  detail: z.string().min(1, "Detail is required").max(255),
+  issueId: z.string().min(1, "Issue Id is required").max(65535),
+});

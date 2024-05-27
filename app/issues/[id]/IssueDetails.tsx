@@ -5,6 +5,7 @@ import React from "react";
 import ReactMarkdown from "react-markdown";
 import StatusSelect from "./StatusSelect";
 import { Session } from "next-auth";
+import IssueComments from "./IssueComments";
 
 const IssueDetails = ({
   issue,
@@ -27,9 +28,16 @@ const IssueDetails = ({
         )}
         <Text>{issue.createdAt.toDateString()}</Text>
       </Flex>
-      <Card className="prose max-w-full" mt="4">
-        <ReactMarkdown>{issue.description}</ReactMarkdown>
-      </Card>
+      <Flex direction="column" mt="4">
+        <Heading size="4">Description</Heading>
+        <Card className="prose max-w-full">
+          <ReactMarkdown>{issue.description}</ReactMarkdown>
+        </Card>
+      </Flex>
+      <Flex direction="column" mt="4">
+        <Heading size="4">Disscussion</Heading>
+        <IssueComments issue={issue} />
+      </Flex>
     </div>
   );
 };
