@@ -1,7 +1,16 @@
 import prisma from "@/prisma/client";
 import { Issue, User } from "@prisma/client";
-import { Box, Blockquote, Flex } from "@radix-ui/themes";
+import {
+  Box,
+  Blockquote,
+  Flex,
+  Button,
+  TextArea,
+  Text,
+  Avatar,
+} from "@radix-ui/themes";
 import React from "react";
+import CommentEditer from "../_components/CommentEditer";
 
 const IssueComments = async ({ issue }: { issue: Issue }) => {
   const comments = await prisma.comment.findMany({
@@ -22,14 +31,25 @@ const IssueComments = async ({ issue }: { issue: Issue }) => {
   });
   return (
     <Flex direction="column" gap="5">
+      <CommentEditer issue={issue} />
       {comments.map((comment) => (
-        <Box key={comment.id}>
+        <Box key={comment.id} display="block">
           <Blockquote size="2">
             <Flex justify="between">
-              <p>{usersMap[comment.createdByUserId]?.name}</p>
+              <div className=" flex gap-2 items-center">
+                <Avatar
+                  src={usersMap[comment.createdByUserId]?.image!}
+                  fallback="?"
+                  size="2"
+                  radius="full"
+                  className="cursor-pointer"
+                  referrerPolicy="no-referrer"
+                />
+                <p>{usersMap[comment.createdByUserId]?.name}</p>
+              </div>
               <p>{comment.createdAt.toDateString()}</p>
             </Flex>
-            {comment.detail}
+            <Text size="3">{comment.detail}</Text>
           </Blockquote>
         </Box>
       ))}

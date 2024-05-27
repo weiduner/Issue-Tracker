@@ -30,7 +30,7 @@ const IssueDetails = ({
       </Flex>
       <Flex direction="column" mt="4">
         <Heading size="4">Description</Heading>
-        <Card className="prose max-w-full">
+        <Card className="prose max-w-full min-h-80">
           <ReactMarkdown>{issue.description}</ReactMarkdown>
         </Card>
       </Flex>

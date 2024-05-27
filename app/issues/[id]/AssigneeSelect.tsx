@@ -1,6 +1,6 @@
 "use client";
 import { Issue, User } from "@prisma/client";
-import { Select, Skeleton } from "@radix-ui/themes";
+import { Avatar, Select, Skeleton } from "@radix-ui/themes";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import toast, { Toaster } from "react-hot-toast";
@@ -28,9 +28,28 @@ const AssigneeSelect = ({ issue }: { issue: Issue }) => {
         <Select.Content>
           <Select.Group>
             <Select.Label>Suggestions</Select.Label>
-            <Select.Item value="null">Unassigned</Select.Item>
+            <Select.Item value="null">
+              <Avatar
+                src=""
+                fallback=""
+                size="1"
+                radius="full"
+                className="cursor-pointer"
+                referrerPolicy="no-referrer"
+              />
+              {"  "}Unassigned
+            </Select.Item>
             {users?.map((user) => (
               <Select.Item key={user.id} value={user.id}>
+                <Avatar
+                  src={user.image!}
+                  fallback="?"
+                  size="1"
+                  radius="full"
+                  className="cursor-pointer"
+                  referrerPolicy="no-referrer"
+                />
+                {"  "}
                 {user.name}
               </Select.Item>
             ))}

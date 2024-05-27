@@ -4,7 +4,10 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import { commentSchema } from "@/app/validationSchemas";
 
-export async function POST(request: NextRequest) {
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
   const session = await getServerSession(authOptions);
   if (!session) return NextResponse.json({}, { status: 401 });
 
@@ -19,7 +22,7 @@ export async function POST(request: NextRequest) {
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 });
   const issue = await prisma.issue.findUnique({
-    where: { id: body.issueId },
+    where: { id: params.id },
   });
   if (!issue)
     return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
