@@ -23,7 +23,7 @@ const IssueComments = async ({ issue }: { issue: Issue }) => {
   return (
     <Flex direction="column" gap="5">
       {comments.map((comment) => (
-        <Box>
+        <Box key={comment.id}>
           <Blockquote size="2">
             <Flex justify="between">
               <p>{usersMap[comment.createdByUserId]?.name}</p>
