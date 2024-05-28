@@ -6,7 +6,6 @@ import { usePathname } from "next/navigation";
 import classnames from "classnames";
 import { useSession } from "next-auth/react";
 import {
-  Avatar,
   Box,
   Container,
   DropdownMenu,
@@ -14,6 +13,7 @@ import {
   Skeleton,
   Text,
 } from "@radix-ui/themes";
+import SessionAvatar from "./components/SessionAvatar";
 
 const NavBar = () => {
   return (
@@ -72,14 +72,7 @@ const AuthStatus = () => {
       {status === "authenticated" && (
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
-            <Avatar
-              src={session.user!.image!}
-              fallback="?"
-              size="2"
-              radius="full"
-              className="cursor-pointer"
-              referrerPolicy="no-referrer"
-            />
+            <SessionAvatar session={session} className="cursor-pointer" />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             <DropdownMenu.Label>

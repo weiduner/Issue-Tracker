@@ -34,10 +34,7 @@ const IssueDetails = ({
           <ReactMarkdown>{issue.description}</ReactMarkdown>
         </Card>
       </Flex>
-      <Flex direction="column" mt="4">
-        <Heading size="4">Discussion</Heading>
-        <IssueComments issue={issue} />
-      </Flex>
+      <IssueComments issue={issue} session={session}/>
     </div>
   );
 };

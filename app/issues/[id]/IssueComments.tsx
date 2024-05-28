@@ -1,10 +1,16 @@
 import prisma from "@/prisma/client";
 import { Issue, User } from "@prisma/client";
-import { Box, Blockquote, Flex, Text, Avatar } from "@radix-ui/themes";
+import { Box, Blockquote, Flex, Text, Avatar, Heading } from "@radix-ui/themes";
 import React from "react";
 import CommentEditer from "../_components/CommentEditer";
-
-const IssueComments = async ({ issue }: { issue: Issue }) => {
+import { Session } from "next-auth";
+const IssueComments = async ({
+  issue,
+  session,
+}: {
+  issue: Issue;
+  session: Session | null;
+}) => {
   const comments = await prisma.comment.findMany({
     where: {
       issueId: issue.id,
@@ -22,8 +28,12 @@ const IssueComments = async ({ issue }: { issue: Issue }) => {
     usersMap[user.id] = user;
   });
   return (
-    <Flex direction="column" gap="5">
-      <CommentEditer issue={issue} />
+    <Flex direction="column" gap="2" mt="4">
+      <Flex gap="2">
+        <Heading size="4">Discussion</Heading>
+        {session && <CommentEditer issue={issue} session={session} />}
+      </Flex>
+
       {comments.map((comment) => (
         <Box key={comment.id} display="block">
           <Blockquote size="2">
@@ -34,7 +44,6 @@ const IssueComments = async ({ issue }: { issue: Issue }) => {
                   fallback="?"
                   size="2"
                   radius="full"
-                  className="cursor-pointer"
                   referrerPolicy="no-referrer"
                 />
                 <p>{usersMap[comment.createdByUserId]?.name}</p>

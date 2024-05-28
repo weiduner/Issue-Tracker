@@ -1,10 +1,12 @@
 "use client";
 import { commentSchema } from "@/app/validationSchemas";
 import {
+  Avatar,
   Box,
   Button,
   Callout,
   Flex,
+  Popover,
   Spinner,
   TextArea,
 } from "@radix-ui/themes";
@@ -16,11 +18,21 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import axios from "axios";
 import { Issue } from "@prisma/client";
 import ErrorMessage from "@/app/components/ErrorMessage";
+import { ChatBubbleIcon } from "@radix-ui/react-icons";
+import { Session } from "next-auth";
+import SessionAvatar from "@/app/components/SessionAvatar";
 type CommentFormData = z.infer<typeof commentSchema>;
-const CommentEditer = ({ issue }: { issue: Issue }) => {
+const CommentEditer = ({
+  issue,
+  session,
+}: {
+  issue: Issue;
+  session: Session;
+}) => {
   const router = useRouter();
   const [error, setError] = useState("");
   const [isProcessing, setProcessing] = useState(false);
+  const [open, setOpen] = React.useState(false);
 
   const {
     register,
@@ -42,6 +54,7 @@ const CommentEditer = ({ issue }: { issue: Issue }) => {
       if (response.status === 201) {
         setProcessing(false);
         reset();
+        setOpen(false);
         router.refresh();
       }
     } catch (error) {
@@ -51,25 +64,43 @@ const CommentEditer = ({ issue }: { issue: Issue }) => {
   });
 
   return (
-    <Box>
-      {" "}
-      {error && (
-        <Callout.Root color="red" className="mb-5">
-          <Callout.Text>{error}</Callout.Text>
-        </Callout.Root>
+    <Flex justify="start" gap="2" align="center">
+      {session && (
+        <Popover.Root open={open} onOpenChange={setOpen}>
+          {error && (
+            <Callout.Root color="red" className="mb-5">
+              <Callout.Text>{error}</Callout.Text>
+            </Callout.Root>
+          )}
+          <Popover.Trigger>
+            <Button size="1" variant="soft">
+              <ChatBubbleIcon width="16" height="16" />
+              Comment
+            </Button>
+          </Popover.Trigger>
+          <Popover.Content width="360px">
+            <Flex gap="3">
+              <SessionAvatar session={session} />
+              <Box flexGrow="1">
+                <form onSubmit={onSubmit}>
+                  <TextArea
+                    {...register("detail")}
+                    placeholder="Write a comment…"
+                    style={{ height: 80 }}
+                  />
+                  <ErrorMessage>{errors.detail?.message}</ErrorMessage>
+                  <Flex gap="3" mt="3" justify="end">
+                    <Button disabled={isProcessing} size="1" type="submit">
+                      Comment {isProcessing && <Spinner />}
+                    </Button>
+                  </Flex>
+                </form>
+              </Box>
+            </Flex>
+          </Popover.Content>
+        </Popover.Root>
       )}
-      <form onSubmit={onSubmit}>
-        <TextArea
-          {...register("detail")}
-          placeholder="Write your comment here..."
-        />
-        <ErrorMessage>{errors.detail?.message}</ErrorMessage>
-
-        <Button mt="2" disabled={isProcessing}>
-          Submit {isProcessing && <Spinner />}
-        </Button>
-      </form>
-    </Box>
+    </Flex>
   );
 };
 
