@@ -19,7 +19,7 @@ export async function PATCH(
   const validation = patchIssueSchema.safeParse(body);
   if (!validation.success)
     return NextResponse.json(validation.error.format(), { status: 400 });
-  const { title, description, assignedToUserId, status } = body;
+  const { title, description, assignedToUserId, status, relatedIssueId } = body;
 
   //validate assigned user
   if (assignedToUserId) {
@@ -39,6 +39,27 @@ export async function PATCH(
   });
   if (!issue)
     return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
+  let relatedIssueObjId = "";
+  //validate related issueId and add relation
+  if (relatedIssueId) {
+    const relatedIssue = await prisma.issue.findUnique({
+      where: { issueId: relatedIssueId },
+    });
+    if (!relatedIssue)
+      return NextResponse.json(
+        { error: "Related Issue Not Found" },
+        { status: 404 }
+      );
+    relatedIssueObjId = relatedIssue.id;
+    await prisma.issue.update({
+      where: { id: relatedIssue.id },
+      data: {
+        relatedIssueIds: !relatedIssue.relatedIssueIds.includes(issue.id)
+          ? [...relatedIssue.relatedIssueIds, issue.id]
+          : relatedIssue.relatedIssueIds,
+      },
+    });
+  }
 
   //update issue
   const updateIssue = await prisma.issue.update({
@@ -48,6 +69,10 @@ export async function PATCH(
       description,
       assignedToUserId,
       status,
+      relatedIssueIds:
+        relatedIssueId && !issue.relatedIssueIds.includes(relatedIssueObjId)
+          ? [...issue.relatedIssueIds, relatedIssueObjId]
+          : issue.relatedIssueIds,
     },
   });
   return NextResponse.json(updateIssue);

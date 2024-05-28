@@ -22,10 +22,11 @@ model Issue {
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
   createdByUserId  String    @db.ObjectId
-  createdByUser    User      @relation(name: "create", fields: [createdByUserId], references: [id])
+  createdByUser    User      @relation(name: "CreatedIssues", fields: [createdByUserId], references: [id])
   assignedToUserId String?   @db.ObjectId
-  assignedToUser   User?     @relation(name: "assign", fields: [assignedToUserId], references: [id])
-  comments         Comment[] @relation( "IssueComments")
+  assignedToUser   User?     @relation(name: "AssignedIssues", fields: [assignedToUserId], references: [id])
+  comments         Comment[] @relation("IssueComments")
+  relatedIssueIds  String[]  @default([]) @db.ObjectId
 }
 
 enum Status {
@@ -38,8 +39,8 @@ model Comment {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   detail          String   @db.String
   createdAt       DateTime @default(now())
-  issueId    String   @db.ObjectId
-  issue      Issue    @relation("IssueComments", fields: [issueId], references: [id])
+  issueId         String   @db.ObjectId
+  issue           Issue    @relation("IssueComments", fields: [issueId], references: [id])
   createdByUserId String   @db.ObjectId
   createdByUser   User     @relation(fields: [createdByUserId], references: [id])
 }
@@ -57,8 +58,8 @@ model User {
 
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
-  createdIssue  Issue[]   @relation(name: "create")
-  assignedIssue Issue[]   @relation(name: "assign")
+  createdIssue  Issue[]   @relation(name: "CreatedIssues")
+  assignedIssue Issue[]   @relation(name: "AssignedIssues")
   comments      Comment[]
 }
 

@@ -8,6 +8,7 @@ import { getServerSession } from "next-auth";
 import authOptions from "@/app/auth/authOptions";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
+import IssueRelations from "./IssueRelations";
 
 interface Props {
   params: { id: string };
@@ -18,7 +19,7 @@ const fetchUser = cache((issueId: string) =>
 const IssueDetailPage = async ({ params }: Props) => {
   const session = await getServerSession(authOptions);
   try {
-    const issue = await fetchUser(params.id)
+    const issue = await fetchUser(params.id);
 
     if (!issue) throw new Error("Issue not found");
 
@@ -33,6 +34,7 @@ const IssueDetailPage = async ({ params }: Props) => {
               <AssigneeSelect issue={issue} />
               <EditIssueButton issueId={issue.id} />
               <DeleteIssueButton issueId={issue.id} />
+              <IssueRelations issue={issue} />
             </Flex>
           </Box>
         )}
