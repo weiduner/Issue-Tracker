@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import classnames from "classnames";
 import { useSession } from "next-auth/react";
 import {
+  Avatar,
   Box,
   Container,
   DropdownMenu,
@@ -72,7 +73,15 @@ const AuthStatus = () => {
       {status === "authenticated" && (
         <DropdownMenu.Root>
           <DropdownMenu.Trigger>
-            <SessionAvatar session={session} className="cursor-pointer" />
+            {/* <SessionAvatar session={session} className="cursor-pointer" /> */}
+            <Avatar
+              src={session.user!.image!}
+              fallback="?"
+              size="2"
+              radius="full"
+              className="cursor-pointer"
+              referrerPolicy="no-referrer"
+            />
           </DropdownMenu.Trigger>
           <DropdownMenu.Content>
             <DropdownMenu.Label>
