@@ -13,7 +13,7 @@ const IssueComments = async ({
 }) => {
   const comments = await prisma.comment.findMany({
     where: {
-      issueId: issue.id,
+      id: { in: issue.commentIds },
     },
     orderBy: {
       createdAt: "desc",

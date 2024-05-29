@@ -92,6 +92,23 @@ export async function DELETE(
   await prisma.comment.deleteMany({
     where: { id: { in: issue.commentIds } },
   });
+  {
+    issue.relatedIssueIds.map(async (relatedIssueId) => {
+      const relatedIssue = await prisma.issue.findUnique({
+        where: { id: relatedIssueId },
+      });
+      if (relatedIssue) {
+        await prisma.issue.update({
+          where: { id: relatedIssueId },
+          data: {
+            relatedIssueIds: relatedIssue.relatedIssueIds.filter(
+              (item) => item !== issue.id
+            ),
+          },
+        });
+      }
+    });
+  }
   await prisma.issue.delete({
     where: { id: issue.id },
   });
