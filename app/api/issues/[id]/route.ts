@@ -89,8 +89,9 @@ export async function DELETE(
   });
   if (!issue)
     return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
-  await prisma.comment.deleteMany({
+  await prisma.comment.updateMany({
     where: { id: { in: issue.commentIds } },
+    data: { isDeleted: true },
   });
   {
     issue.relatedIssueIds.map(async (relatedIssueId) => {
@@ -109,8 +110,9 @@ export async function DELETE(
       }
     });
   }
-  await prisma.issue.delete({
+  await prisma.issue.update({
     where: { id: issue.id },
+    data: { isDeleted: true },
   });
   return NextResponse.json({});
 }

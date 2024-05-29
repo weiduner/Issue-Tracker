@@ -71,16 +71,17 @@ export async function DELETE(
       { error: "Comment Not Found in Issue" },
       { status: 404 }
     );
-  await prisma.comment.delete({
+  await prisma.comment.update({
     where: {
       id: comment.id,
     },
+    data:{isDeleted:true}
   });
-  const commentSet = new Set(issue.commentIds);
-  commentSet.delete(comment.id);
-  await prisma.issue.update({
-    where: { id: issue.id },
-    data: { commentIds: Array.from(commentSet) },
-  });
+  // const commentSet = new Set(issue.commentIds);
+  // commentSet.delete(comment.id);
+  // await prisma.issue.update({
+  //   where: { id: issue.id },
+  //   data: { commentIds: Array.from(commentSet) },
+  // });
   return NextResponse.json({});
 }

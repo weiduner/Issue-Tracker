@@ -21,12 +21,13 @@ model Issue {
   status           Status    @default(OPEN)
   createdAt        DateTime  @default(now())
   updatedAt        DateTime  @updatedAt
+  isDeleted        Boolean   @default(false)
   createdByUserId  String    @db.ObjectId
   createdByUser    User      @relation(name: "CreatedIssues", fields: [createdByUserId], references: [id])
   assignedToUserId String?   @db.ObjectId
   assignedToUser   User?     @relation(name: "AssignedIssues", fields: [assignedToUserId], references: [id])
-  commentIds         String[] @default([]) @db.ObjectId
-  comments   Comment[] @relation(name:"IssueComments")
+  commentIds       String[]  @default([]) @db.ObjectId
+  comments         Comment[] @relation(name: "IssueComments")
   relatedIssueIds  String[]  @default([]) @db.ObjectId
 }
 
@@ -40,6 +41,8 @@ model Comment {
   id              String   @id @default(auto()) @map("_id") @db.ObjectId
   detail          String   @db.String
   createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  isDeleted       Boolean  @default(false)
   issueId         String   @db.ObjectId
   issue           Issue    @relation("IssueComments", fields: [issueId], references: [id])
   createdByUserId String   @db.ObjectId

@@ -34,26 +34,28 @@ const IssueComments = async ({
         {session && <CommentEditer issue={issue} session={session} />}
       </Flex>
 
-      {comments.map((comment) => (
-        <Box key={comment.id} display="block">
-          <Blockquote size="2">
-            <Flex justify="between">
-              <div className=" flex gap-2 items-center">
-                <Avatar
-                  src={usersMap[comment.createdByUserId]?.image!}
-                  fallback="?"
-                  size="2"
-                  radius="full"
-                  referrerPolicy="no-referrer"
-                />
-                <p>{usersMap[comment.createdByUserId]?.name}</p>
-              </div>
-              <p>{comment.createdAt.toDateString()}</p>
-            </Flex>
-            <Text size="3">{comment.detail}</Text>
-          </Blockquote>
-        </Box>
-      ))}
+      {comments
+        .filter((comment) => !comment.isDeleted)
+        .map((comment) => (
+          <Box key={comment.id} display="block">
+            <Blockquote size="2">
+              <Flex justify="between">
+                <div className=" flex gap-2 items-center">
+                  <Avatar
+                    src={usersMap[comment.createdByUserId]?.image!}
+                    fallback="?"
+                    size="2"
+                    radius="full"
+                    referrerPolicy="no-referrer"
+                  />
+                  <p>{usersMap[comment.createdByUserId]?.name}</p>
+                </div>
+                <p>{comment.createdAt.toDateString()}</p>
+              </Flex>
+              <Text size="3">{comment.detail}</Text>
+            </Blockquote>
+          </Box>
+        ))}
     </Flex>
   );
 };
