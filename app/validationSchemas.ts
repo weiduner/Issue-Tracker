@@ -37,3 +37,7 @@ export const filterIssueSchema = z.object({
 export const commentSchema = z.object({
   detail: z.string().min(1, "Detail is required").max(255),
 });
+
+export const deleteCommentSchema = z.object({
+  commentId: z.string().min(1, "commentId required").max(255),
+});

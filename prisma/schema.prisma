@@ -25,7 +25,8 @@ model Issue {
   createdByUser    User      @relation(name: "CreatedIssues", fields: [createdByUserId], references: [id])
   assignedToUserId String?   @db.ObjectId
   assignedToUser   User?     @relation(name: "AssignedIssues", fields: [assignedToUserId], references: [id])
-  comments         Comment[] @relation("IssueComments")
+  commentIds         String[] @default([]) @db.ObjectId
+  comments   Comment[] @relation(name:"IssueComments")
   relatedIssueIds  String[]  @default([]) @db.ObjectId
 }
 
