@@ -12,7 +12,7 @@ import {
   TextField,
   Text,
 } from "@radix-ui/themes";
-import axios, { AxiosError } from "axios";
+import axios from "axios";
 import "easymde/dist/easymde.min.css";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -20,7 +20,6 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import SimpleMDE from "react-simplemde-editor";
 import { Pencil2Icon, PlusIcon } from "@radix-ui/react-icons";
-import StatusSelect from "../[id]/StatusSelect";
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
