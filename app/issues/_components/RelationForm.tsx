@@ -39,25 +39,26 @@ const RelationForm = ({ issue }: { issue: Issue }) => {
 
       if (response.status === 200) {
         setProcessing(false);
+        setError("");
         reset();
         router.refresh();
       }
     } catch (error) {
       setProcessing(false);
-      setError("An unexpected error occured.");
+      if (axios.isAxiosError(error)) {
+        setError(error.response!.data);
+      } else {
+        setError("An unexpected error occured");
+      }
     }
   });
   const handleCancel = () => {
+    setError("");
     reset();
   };
   return (
     <Dialog.Root>
       {" "}
-      {error && (
-        <Callout.Root color="red" className="mb-5">
-          <Callout.Text>{error}</Callout.Text>
-        </Callout.Root>
-      )}
       <Dialog.Trigger>
         <Button size="1">+</Button>
       </Dialog.Trigger>
@@ -65,6 +66,11 @@ const RelationForm = ({ issue }: { issue: Issue }) => {
         <form onSubmit={onSubmit}>
           {" "}
           <Dialog.Title>Add Related Issues</Dialog.Title>{" "}
+          {error && (
+            <Callout.Root color="red" className="mb-5">
+              <Callout.Text>{error}</Callout.Text>
+            </Callout.Root>
+          )}
           <label>
             <Text as="div" size="2" mb="1" weight="bold">
               Issue ID

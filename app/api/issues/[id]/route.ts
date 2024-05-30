@@ -7,6 +7,7 @@ import {
   validateSession,
   validateUserById,
   validateIssueById,
+  validateIssueByIssueId,
 } from "@/app/lib/validationUtils";
 
 const statuses = Object.values(Status);
@@ -47,11 +48,16 @@ export async function PATCH(
 
   //Update Related Issue
   if (relatedIssueId) {
-    const relatedIssue = await validateIssueById({
-      id: relatedIssueId,
+    const relatedIssue = await validateIssueByIssueId({
+      issueId: relatedIssueId,
       errorMsg: "Cannot find IssuId: " + relatedIssueId,
     });
     if (relatedIssue instanceof NextResponse) return relatedIssue;
+    if (issue.id === relatedIssue.id)
+      return NextResponse.json(
+        "Cannot related " + issue.issueId + " to " + relatedIssue.issueId,
+        { status: 400 }
+      );
     await prisma.issue.update({
       where: { id: relatedIssue.id },
       data: {
@@ -99,10 +105,18 @@ export async function DELETE(
       });
       if (relatedIssue instanceof NextResponse) return relatedIssue;
       await prisma.issue.update({
-        where: { id: relatedIssueId },
+        where: { id: relatedIssue.id },
         data: {
           relatedIssueIds: relatedIssue.relatedIssueIds.filter(
             (item) => item !== issue.id
+          ),
+        },
+      });
+      await prisma.issue.update({
+        where: { id: issue.id },
+        data: {
+          relatedIssueIds: issue.relatedIssueIds.filter(
+            (item) => item !== relatedIssue.id
           ),
         },
       });

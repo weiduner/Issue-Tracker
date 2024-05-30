@@ -59,7 +59,24 @@ export async function validateIssueById({
   errorMsg?: string;
 }) {
   const issue = await prisma.issue.findUnique({
-    where: { id: id },
+    where: { id: id, isDeleted: false },
+  });
+  if (!issue) {
+    return NextResponse.json(errorMsg, { status: 404 });
+  }
+  return issue;
+}
+
+// Issue by Id
+export async function validateIssueByIssueId({
+  issueId,
+  errorMsg = "Issue Not Found",
+}: {
+  issueId: string;
+  errorMsg?: string;
+}) {
+  const issue = await prisma.issue.findUnique({
+    where: { issueId: issueId, isDeleted: false },
   });
   if (!issue) {
     return NextResponse.json(errorMsg, { status: 404 });
@@ -76,7 +93,7 @@ export async function validateIssueCommentById({
   errorMsg?: string;
 }) {
   const issueComment = await prisma.comment.findUnique({
-    where: { id: id },
+    where: { id: id, isDeleted: false },
   });
   if (!issueComment) {
     return NextResponse.json(errorMsg, { status: 404 });

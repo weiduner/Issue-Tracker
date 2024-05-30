@@ -36,6 +36,7 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
         const response = await axios.post("/api/issues", data);
         issue = response.data;
       }
+      setError("");
       router.push("/issues/" + issue!.id);
       router.refresh();
     } catch (error) {
