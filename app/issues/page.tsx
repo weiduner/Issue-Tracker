@@ -35,7 +35,7 @@ const IssuePage = async ({ searchParams }: Props) => {
   const session = await getServerSession(authOptions);
   return (
     <Flex direction="column" gap="3">
-      {session && <IssueActions />}
+      <IssueActions session={session} />
       <IssueTable searchParams={searchParams} issues={issues} />
       <Pagination
         pageSize={pageSize}

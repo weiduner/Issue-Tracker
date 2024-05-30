@@ -9,6 +9,7 @@ import authOptions from "@/app/auth/authOptions";
 import AssigneeSelect from "./AssigneeSelect";
 import { cache } from "react";
 import IssueRelations from "./IssueRelations";
+import IssueForm from "../_components/IssueForm";
 
 interface Props {
   params: { id: string };
@@ -32,7 +33,7 @@ const IssueDetailPage = async ({ params }: Props) => {
           <Box>
             <Flex direction="column" gap="4">
               <AssigneeSelect issue={issue} />
-              <EditIssueButton issueId={issue.id} />
+              <IssueForm issue={issue} />
               <DeleteIssueButton issueId={issue.id} />
               <IssueRelations issue={issue} />
             </Flex>

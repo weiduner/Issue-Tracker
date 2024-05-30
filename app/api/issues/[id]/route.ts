@@ -30,7 +30,7 @@ export async function PATCH(
   // Validate Updated Issue
   const issue = await validateIssueById({ id: params.id });
   if (issue instanceof NextResponse) return issue;
-  const data: any = { titel: title, description: description };
+  const data: any = { title: title, description: description };
 
   // Update Assigned User
   if (assignedToUserId) {

@@ -32,7 +32,7 @@ const CommentEditer = ({
   const router = useRouter();
   const [error, setError] = useState("");
   const [isProcessing, setProcessing] = useState(false);
-  const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = useState(false);
 
   const {
     register,
