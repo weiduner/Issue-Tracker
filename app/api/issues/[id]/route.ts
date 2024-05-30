@@ -34,9 +34,9 @@ export async function PATCH(
 
   // Update Assigned User
   if (assignedToUserId) {
-    const assignedToUser = validateUserById(assignedToUserId);
+    const assignedToUser = await validateUserById(assignedToUserId);
     if (assignedToUser instanceof NextResponse) return assignedToUser;
-    data.assignedToUserId = assignedToUserId;
+    data.assignedToUserId = assignedToUser.id;
   }
   // Update Issue Status
   if (status) {

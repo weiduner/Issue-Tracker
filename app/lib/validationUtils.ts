@@ -44,6 +44,7 @@ export async function validateUserById(id: string) {
   const user = await prisma.user.findUnique({
     where: { id: id },
   });
+  
   if (!user) {
     return NextResponse.json("User Not Found", { status: 404 });
   }
