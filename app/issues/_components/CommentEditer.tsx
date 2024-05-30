@@ -1,5 +1,5 @@
 "use client";
-import { commentSchema } from "@/app/validationSchemas";
+import { commentSchema } from "@/app/lib/validationSchemas";
 import {
   Avatar,
   Box,

@@ -1,79 +1,74 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
-import { patchIssueSchema } from "@/app/validationSchemas";
-import authOptions from "@/app/auth/authOptions";
-import { getServerSession } from "next-auth";
+import { patchIssueSchema } from "@/app/lib/validationSchemas";
 import { Status } from "@prisma/client";
+import {
+  validateSchema,
+  validateSession,
+  validateUserById,
+  validateIssueById,
+} from "@/app/lib/validationUtils";
 
 const statuses = Object.values(Status);
 export async function PATCH(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // require login
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({}, { status: 401 });
+  // Validation Session
+  const session = await validateSession();
+  if (session instanceof NextResponse) return session;
+  // Validation Request Body
+  const body = await validateSchema({
+    schema: patchIssueSchema,
+    body: await request.json(),
+  });
+  if (body instanceof NextResponse) return body;
 
-  //validate body
-  const body = await request.json();
-  const validation = patchIssueSchema.safeParse(body);
-  if (!validation.success)
-    return NextResponse.json(validation.error.format(), { status: 400 });
   const { title, description, assignedToUserId, status, relatedIssueId } = body;
 
-  //validate assigned user
+  // Validate Updated Issue
+  const issue = await validateIssueById({ id: params.id });
+  if (issue instanceof NextResponse) return issue;
+  const data: any = { titel: title, description: description };
+
+  // Update Assigned User
   if (assignedToUserId) {
-    const user = await prisma.user.findUnique({
-      where: { id: assignedToUserId },
-    });
-    if (!user)
-      return NextResponse.json({ error: "Invalid User." }, { status: 400 });
+    const assignedToUser = validateUserById(assignedToUserId);
+    if (assignedToUser instanceof NextResponse) return assignedToUser;
+    data.assignedToUserId = assignedToUserId;
   }
-  if (status && !statuses.includes(status)) {
-    return NextResponse.json({ error: "Invalid Status." }, { status: 400 });
+  // Update Issue Status
+  if (status) {
+    if (!statuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid Status." }, { status: 400 });
+    }
+    data.status = status;
   }
 
-  //validate updated issue
-  const issue = await prisma.issue.findUnique({
-    where: { id: params.id },
-  });
-  if (!issue)
-    return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
-  let relatedIssueObjId = "";
-  //validate related issueId and add relation
+  //Update Related Issue
   if (relatedIssueId) {
-    const relatedIssue = await prisma.issue.findUnique({
-      where: { issueId: relatedIssueId },
+    const relatedIssue = await validateIssueById({
+      id: relatedIssueId,
+      errorMsg: "Cannot find IssuId: " + relatedIssueId,
     });
-    if (!relatedIssue)
-      return NextResponse.json(
-        { error: "Related Issue Not Found" },
-        { status: 404 }
-      );
-    relatedIssueObjId = relatedIssue.id;
+    if (relatedIssue instanceof NextResponse) return relatedIssue;
     await prisma.issue.update({
       where: { id: relatedIssue.id },
       data: {
-        relatedIssueIds: !relatedIssue.relatedIssueIds.includes(issue.id)
-          ? [...relatedIssue.relatedIssueIds, issue.id]
-          : relatedIssue.relatedIssueIds,
+        relatedIssueIds: Array.from(
+          new Set([...relatedIssue.relatedIssueIds, issue.id])
+        ),
       },
     });
+    data.relatedIssueIds = Array.from(
+      new Set([...issue.relatedIssueIds, relatedIssue.id])
+    );
   }
 
   //update issue
   const updateIssue = await prisma.issue.update({
     where: { id: issue.id },
-    data: {
-      title,
-      description,
-      assignedToUserId,
-      status,
-      relatedIssueIds:
-        relatedIssueId && !issue.relatedIssueIds.includes(relatedIssueObjId)
-          ? [...issue.relatedIssueIds, relatedIssueObjId]
-          : issue.relatedIssueIds,
-    },
+    data,
   });
   return NextResponse.json(updateIssue);
 }
@@ -82,34 +77,39 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({}, { status: 401 });
-  const issue = await prisma.issue.findUnique({
-    where: { id: params.id },
-  });
-  if (!issue)
-    return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
+  // Validation Session
+  const session = await validateSession();
+  if (session instanceof NextResponse) return session;
+
+  // Validate Deleted Issue
+  const issue = await validateIssueById({ id: params.id });
+  if (issue instanceof NextResponse) return issue;
+
+  //Delete Issue Comment
   await prisma.comment.updateMany({
     where: { id: { in: issue.commentIds } },
     data: { isDeleted: true },
   });
+  //Delete Issue Relation
   {
     issue.relatedIssueIds.map(async (relatedIssueId) => {
-      const relatedIssue = await prisma.issue.findUnique({
-        where: { id: relatedIssueId },
+      const relatedIssue = await validateIssueById({
+        id: relatedIssueId,
+        errorMsg: "Cannot find IssuId: " + relatedIssueId,
       });
-      if (relatedIssue) {
-        await prisma.issue.update({
-          where: { id: relatedIssueId },
-          data: {
-            relatedIssueIds: relatedIssue.relatedIssueIds.filter(
-              (item) => item !== issue.id
-            ),
-          },
-        });
-      }
+      if (relatedIssue instanceof NextResponse) return relatedIssue;
+      await prisma.issue.update({
+        where: { id: relatedIssueId },
+        data: {
+          relatedIssueIds: relatedIssue.relatedIssueIds.filter(
+            (item) => item !== issue.id
+          ),
+        },
+      });
     });
   }
+
+  // Delete Issue
   await prisma.issue.update({
     where: { id: issue.id },
     data: { isDeleted: true },

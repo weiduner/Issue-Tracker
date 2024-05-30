@@ -1,19 +1,30 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
-import { filterIssueSchema, issueSchema } from "../../validationSchemas";
-import { getServerSession } from "next-auth";
-import authOptions from "@/app/auth/authOptions";
+import { filterIssueSchema, issueSchema } from "../../lib/validationSchemas";
 import { Status } from "@prisma/client";
+import {
+  validateSchema,
+  validateSession,
+  validateUserBySession,
+} from "@/app/lib/validationUtils";
 const statuses = Object.values(Status);
 
 export async function POST(request: NextRequest) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({}, { status: 401 });
-  const email = session.user?.email ?? "";
-  const user = await prisma.user.findUnique({
-    where: { email: email },
+  // Validation Session
+  const session = await validateSession();
+  if (session instanceof NextResponse) return session;
+  // Validation  User
+  const user = await validateUserBySession(session);
+  if (user instanceof NextResponse) return user;
+  // Validation Request Body
+  const body = await validateSchema({
+    schema: issueSchema,
+    body: await request.json(),
   });
-  if (!user) return NextResponse.json("User required", { status: 401 });
+  if (body instanceof NextResponse) return body;
+
+  // Function Begin
+  const { title, description, status } = body;
   const generateCustomId = async () => {
     const date = new Date().toISOString().split("T")[0].replace(/-/g, ""); // Get current date in YYYY-MM-DD format
 
@@ -29,17 +40,15 @@ export async function POST(request: NextRequest) {
 
     return `${date}-${count + 1}`;
   };
-  const body = await request.json();
-  const validation = issueSchema.safeParse(body);
-  if (!validation.success)
-    return NextResponse.json(validation.error.format(), { status: 400 });
   const issueId = await generateCustomId();
   const newIssue = await prisma.issue.create({
     data: {
-      title: body.title,
-      description: body.description,
+      title,
+      description,
+      status,
       issueId: issueId,
-      createdByUserId: user?.id ?? "664ef7ae28f0d8249be7d81f",
+      createdByUserId: user?.id,
+      // createdByUserId: "664ef7ae28f0d8249be7d81f",
     },
   });
   return NextResponse.json(newIssue, { status: 201 });

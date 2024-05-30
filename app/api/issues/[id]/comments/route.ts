@@ -1,30 +1,40 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/prisma/client";
-import { getServerSession } from "next-auth";
-import authOptions from "@/app/auth/authOptions";
-import { deleteCommentSchema, commentSchema } from "@/app/validationSchemas";
+import {
+  deleteCommentSchema,
+  commentSchema,
+} from "@/app/lib/validationSchemas";
+import {
+  validateIssueById,
+  validateSchema,
+  validateSession,
+  validateUserBySession,
+} from "@/app/lib/validationUtils";
 
 export async function POST(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({}, { status: 401 });
-  const email = session.user?.email ?? "";
-  const user = await prisma.user.findUnique({
-    where: { email: email },
-  });
-  if (!user) return NextResponse.json("User required", { status: 401 });
+  // Validation Session
+  const session = await validateSession();
+  if (session instanceof NextResponse) return session;
 
-  const body = await request.json();
-  const validation = commentSchema.safeParse(body);
-  if (!validation.success)
-    return NextResponse.json(validation.error.format(), { status: 400 });
-  const issue = await prisma.issue.findUnique({
-    where: { id: params.id },
+  // Validation  User
+  const user = await validateUserBySession(session);
+  if (user instanceof NextResponse) return user;
+
+  // Validation Request Body
+  const body = await validateSchema({
+    schema: commentSchema,
+    body: await request.json(),
   });
-  if (!issue)
-    return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
+  if (body instanceof NextResponse) return body;
+
+  // Validate Updated Issue
+  const issue = await validateIssueById({ id: params.id });
+  if (issue instanceof NextResponse) return issue;
+
+  // Create Comment
   const newComment = await prisma.comment.create({
     data: {
       detail: body.detail,
@@ -32,6 +42,8 @@ export async function POST(
       createdByUserId: user.id,
     },
   });
+
+  // Add CommentId to Issue
   await prisma.issue.update({
     where: { id: issue.id },
     data: { commentIds: [...issue.commentIds, newComment.id] },
@@ -43,45 +55,37 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const session = await getServerSession(authOptions);
-  if (!session) return NextResponse.json({}, { status: 401 });
-  const email = session.user?.email ?? "";
-  const user = await prisma.user.findUnique({
-    where: { email: email },
-  });
-  if (!user) return NextResponse.json("User required", { status: 401 });
+  // Validation Session
+  const session = await validateSession();
+  if (session instanceof NextResponse) return session;
 
-  const body = await request.json();
-  const validation = deleteCommentSchema.safeParse(body);
-  if (!validation.success)
-    return NextResponse.json(validation.error.format(), { status: 400 });
-  const issue = await prisma.issue.findUnique({
-    where: { id: params.id },
+  // Validation Request Body
+  const body = await validateSchema({
+    schema: deleteCommentSchema,
+    body: await request.json(),
   });
-  if (!issue)
-    return NextResponse.json({ error: "Invalid Issue" }, { status: 404 });
+  if (body instanceof NextResponse) return body;
 
-  const comment = await prisma.comment.findUnique({
-    where: { id: body.commentId },
-  });
-  if (!comment)
-    return NextResponse.json({ error: "Invalid Comment" }, { status: 404 });
-  if (!issue.commentIds.includes(comment.id))
+  // Validate Updated Issue
+  const issue = await validateIssueById({ id: params.id });
+  if (issue instanceof NextResponse) return issue;
+
+  // Validate Deleted Issue Comment
+  const issueComment = await validateIssueById({ id: body.commentId });
+  if (issueComment instanceof NextResponse) return issueComment;
+
+  // Validate the Deleted Comment is in Updated Issue
+  if (!issue.commentIds.includes(issueComment.id))
     return NextResponse.json(
       { error: "Comment Not Found in Issue" },
       { status: 404 }
     );
+  //  Delete Comment
   await prisma.comment.update({
     where: {
-      id: comment.id,
+      id: issueComment.id,
     },
-    data:{isDeleted:true}
+    data: { isDeleted: true },
   });
-  // const commentSet = new Set(issue.commentIds);
-  // commentSet.delete(comment.id);
-  // await prisma.issue.update({
-  //   where: { id: issue.id },
-  //   data: { commentIds: Array.from(commentSet) },
-  // });
   return NextResponse.json({});
 }

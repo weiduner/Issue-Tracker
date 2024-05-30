@@ -1,5 +1,5 @@
 "use client";
-import { patchIssueSchema } from "@/app/validationSchemas";
+import { patchIssueSchema } from "@/app/lib/validationSchemas";
 import {
   Button,
   Callout,

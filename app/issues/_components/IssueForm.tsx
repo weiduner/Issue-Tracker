@@ -1,6 +1,6 @@
 "use client";
 import ErrorMessage from "@/app/components/ErrorMessage";
-import { issueSchema } from "@/app/validationSchemas";
+import { issueSchema } from "@/app/lib/validationSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Issue } from "@prisma/client";
 import { Button, Callout, Flex, Spinner, TextField } from "@radix-ui/themes";
