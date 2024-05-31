@@ -5,6 +5,7 @@ import { Status } from "@prisma/client";
 import {
   validateSchema,
   validateSession,
+  validateUserById,
   validateUserBySession,
 } from "@/app/lib/validationUtils";
 const statuses = Object.values(Status);
@@ -24,7 +25,8 @@ export async function POST(request: NextRequest) {
   if (body instanceof NextResponse) return body;
 
   // Function Begin
-  const { title, description, status } = body;
+  const { title, description, status, assignedToUserId } = body;
+  const data: any = { title: title, description: description };
   const generateCustomId = async () => {
     const date = new Date().toISOString().split("T")[0].replace(/-/g, ""); // Get current date in YYYY-MM-DD format
 
@@ -41,15 +43,21 @@ export async function POST(request: NextRequest) {
     return `${date}-${count + 1}`;
   };
   const issueId = await generateCustomId();
+  data.issueId = issueId;
+  if (status) {
+    if (!statuses.includes(status)) {
+      return NextResponse.json({ error: "Invalid Status." }, { status: 400 });
+    }
+    data.status = status;
+  }
+  if (assignedToUserId) {
+    const assignedToUser = await validateUserById(assignedToUserId);
+    if (assignedToUser instanceof NextResponse) return assignedToUser;
+    data.assignedToUserId = assignedToUser.id;
+  }
+  data.createdByUserId = user.id;
   const newIssue = await prisma.issue.create({
-    data: {
-      title,
-      description,
-      status,
-      issueId: issueId,
-      createdByUserId: user?.id,
-      // createdByUserId: "664ef7ae28f0d8249be7d81f",
-    },
+    data,
   });
   return NextResponse.json(newIssue, { status: 201 });
 }
