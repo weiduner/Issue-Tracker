@@ -2,7 +2,7 @@
 import ErrorMessage from "@/app/components/ErrorMessage";
 import { issueSchema } from "@/app/lib/validationSchemas";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Issue } from "@prisma/client";
+import { Issue, Status } from "@prisma/client";
 import {
   Button,
   Callout,
@@ -20,6 +20,8 @@ import { Controller, useForm } from "react-hook-form";
 import { z } from "zod";
 import SimpleMDE from "react-simplemde-editor";
 import { Pencil2Icon, PlusIcon } from "@radix-ui/react-icons";
+import StatusSelect from "./StatusSelect";
+import AssigneeSelect from "./AssigneeSelect";
 
 type IssueFormData = z.infer<typeof issueSchema>;
 
@@ -41,6 +43,10 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
   const onSubmit = handleSubmit(async (data) => {
     try {
       setProcessing(true);
+      let postData = { ...data };
+      if (postData.assignedToUserId === "null") {
+        postData.assignedToUserId = null;
+      }
       let response;
       if (issue) {
         response = await axios.patch("/api/issues/" + issue.id, data);
@@ -106,7 +112,34 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
             {...register("title")}
           ></TextField.Root>
           <ErrorMessage>{errors.title?.message}</ErrorMessage>
-
+          <Flex gap="2">
+            {/* status input */}
+            <Controller
+              defaultValue={issue?.status ?? "OPEN"}
+              name="status"
+              control={control}
+              render={({ field }) => (
+                <StatusSelect
+                  issue={issue}
+                  value={field.value as Status}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+            {/* assignee input */}
+            <Controller
+              defaultValue={issue?.assignedToUserId ?? null}
+              name="assignedToUserId"
+              control={control}
+              render={({ field }) => (
+                <AssigneeSelect
+                  issue={issue}
+                  value={field.value as string | null}
+                  onChange={field.onChange}
+                />
+              )}
+            />
+          </Flex>
           {/* description input */}
           <Text as="div" size="2" mb="1" weight="bold">
             Description
