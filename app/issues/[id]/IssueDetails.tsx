@@ -3,9 +3,10 @@ import { Issue } from "@prisma/client";
 import { Flex, Heading, Card, Text } from "@radix-ui/themes";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import StatusSelect from "./StatusSelect";
+import StatusSelect from "../_components/StatusSelect";
 import { Session } from "next-auth";
 import IssueComments from "./IssueComments";
+import IssueAssigneeBadge from "@/app/components/IssueAssigneeBadge";
 
 const IssueDetails = ({
   issue,
@@ -21,11 +22,8 @@ const IssueDetails = ({
       </Heading>
 
       <Flex gap="3" my="2" align="center">
-        {session ? (
-          <StatusSelect issue={issue} />
-        ) : (
-          <IssueStatusBadge status={issue.status} />
-        )}
+        <IssueStatusBadge status={issue.status} />
+<IssueAssigneeBadge assigneedId={issue.assignedToUserId}/>
         <Text>{issue.createdAt.toDateString()}</Text>
       </Flex>
       <Flex direction="column" mt="4">
@@ -34,7 +32,7 @@ const IssueDetails = ({
           <ReactMarkdown>{issue.description}</ReactMarkdown>
         </Card>
       </Flex>
-      <IssueComments issue={issue} session={session}/>
+      <IssueComments issue={issue} session={session} />
     </div>
   );
 };
