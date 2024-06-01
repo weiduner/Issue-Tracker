@@ -22,9 +22,9 @@ const IssueDetails = ({
       </Heading>
 
       <Flex gap="3" my="2" align="center">
-        <IssueStatusBadge status={issue.status} />
-<IssueAssigneeBadge assigneedId={issue.assignedToUserId}/>
-        <Text>{issue.createdAt.toDateString()}</Text>
+        Status: <IssueStatusBadge status={issue.status} size="3" />
+        Assigned To: <IssueAssigneeBadge assigneedId={issue.assignedToUserId} />
+        <Text>Created On: {issue.createdAt.toDateString()}</Text>
       </Flex>
       <Flex direction="column" mt="4">
         <Heading size="4">Description</Heading>
