@@ -3,7 +3,6 @@ import { Issue } from "@prisma/client";
 import { Flex, Heading, Card, Text } from "@radix-ui/themes";
 import React from "react";
 import ReactMarkdown from "react-markdown";
-import StatusSelect from "../_components/StatusSelect";
 import { Session } from "next-auth";
 import IssueComments from "./IssueComments";
 import IssueAssigneeBadge from "@/app/components/IssueAssigneeBadge";
